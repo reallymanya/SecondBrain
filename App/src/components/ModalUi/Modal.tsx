@@ -1,42 +1,54 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { X, Youtube, Twitter, FileText, Hash, Link as LinkIcon, Check } from "lucide-react";
+import { GlowingButton } from "@/components/ui/glowing-button";
+import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
 
-const Modal = (props: {onClick: () => void,setModal: (value: boolean) => void, setReloadData: ()=> void}) => {
-
+const Modal = (props: { onClick: () => void, setModal: (value: boolean) => void, setReloadData: () => void }) => {
   const navigate = useNavigate();
-
   const modalRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const linkRef = useRef<HTMLInputElement>(null);
   const [tag, setTag] = useState("Productivity");
-  const [category, setCategory] = useState("Youtube");
+  const [category, setCategory] = useState("youtube");
+  const [loading, setLoading] = useState(false);
+
   const mapTags = ["Productivity", "Tech & Tools", "Mindset", "Learning & Skills", "Workflows", "Inspiration"] as const;
 
-  const submitData = async() => {
-    props.setModal(false);
+  const categories = [
+    { id: "youtube", label: "YouTube", icon: <Youtube className="w-4 h-4" /> },
+    { id: "twitter", label: "Twitter", icon: <Twitter className="w-4 h-4" /> },
+    { id: "medium", label: "Medium", icon: <FileText className="w-4 h-4" /> },
+    { id: "substack", label: "Substack", icon: <Hash className="w-4 h-4" /> },
+    { id: "link", label: "Other", icon: <LinkIcon className="w-4 h-4" /> }
+  ];
+
+  const submitData = async () => {
     if (
       linkRef.current?.value.trim() === "" ||
       titleRef.current?.value.trim() === ""
     ) {
-      alert("Fill all the input fields");
       return;
     }
 
+    setLoading(true);
+
     const data = {
       link: linkRef.current?.value || "",
-      contentType: category,
+      contentType: category.toLowerCase(),
       title: titleRef.current?.value || "",
       tag,
     };
-    try{
+
+    try {
       const token = localStorage.getItem("token");
-      if(!token){
-        alert("Please log in first");
-        navigate("/"); 
+      if (!token) {
+        navigate("/login");
         return;
       }
 
-      await fetch("http://localhost:5000/api/v1/addcontent", {
+      await fetch("http://localhost:3001/api/v1/addcontent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,75 +59,111 @@ const Modal = (props: {onClick: () => void,setModal: (value: boolean) => void, s
       });
 
       props.setReloadData();
-      alert("content added");
-      }catch(err){
-        console.log("Error while sending data");
-      }
+      props.setModal(false);
+    } catch (err) {
+      console.log("Error while sending data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 h-screen w-full flex justify-center items-center">
-      <div  ref={modalRef} onClick={props.onClick} className="absolute inset-0 bg-black bg-opacity-50"></div>
-      <div className="relative z-10 w-[30vw]  h-[60vh] border-2 bg-white  flex flex-col  items-center rounded-xl">
-      <div className="flex">
-        <div className="text-2xl font-bold text-blue-600 relative border-b border-blue-600 mt-2"> 
-            Add Content
+    <div className="fixed inset-0 h-screen w-full flex justify-center items-center z-50 px-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        ref={modalRef}
+        onClick={props.onClick}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+      />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        className="relative z-10 w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+          <h2 className="text-xl font-bold font-heading text-white">Add New Content</h2>
+          <button
+            onClick={props.onClick}
+            className="p-1 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <div className="absolute right-2 top-1 text-xl font-semibold hover:bg-slate-100 flex  justify-center hover:cursor-pointer w-5" onClick={props.onClick}>X</div>
-      </div>
-        <div className="mt-10 mb-3">
-          <input ref={titleRef}
-          type="text" placeholder="Title"   maxLength={20} className="bg-slate-200 w-[22vw] h-10 rounded-lg p-3 text-black placeholder:text-slate-500 placeholder:text-xl outline-none hover:bg-slate-300"/>
+
+        <div className="p-6 space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1.5 block uppercase tracking-wider">Title</label>
+              <Input
+                ref={titleRef}
+                placeholder="e.g. The Future of AI"
+                maxLength={50}
+                className="bg-white/[0.03] border-white/10"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1.5 block uppercase tracking-wider">URL</label>
+              <Input
+                ref={linkRef}
+                placeholder="https://..."
+                className="bg-white/[0.03] border-white/10"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-3 block uppercase tracking-wider">Category</label>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategory(cat.id)}
+                  className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${category === cat.id
+                      ? "bg-purple-500/10 border-purple-500/50 text-purple-400"
+                      : "bg-white/[0.03] border-white/5 text-slate-400 hover:bg-white/[0.05] hover:text-white"
+                    }`}
+                >
+                  <div className="mb-1">{cat.icon}</div>
+                  <span className="text-[10px] font-medium">{cat.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-3 block uppercase tracking-wider">Tags</label>
+            <div className="flex flex-wrap gap-2">
+              {mapTags.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTag(t)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${tag === t
+                      ? "bg-blue-500/10 border-blue-500/50 text-blue-400"
+                      : "bg-white/[0.03] border-white/5 text-slate-400 hover:bg-white/[0.05] hover:text-white"
+                    }`}
+                >
+                  {tag === t && <Check className="w-3 h-3" />}
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <GlowingButton onClick={submitData} className="w-full" disabled={loading}>
+              {loading ? "Adding to Brain..." : "Add Content"}
+            </GlowingButton>
+          </div>
         </div>
-        <div>
-          <input ref={linkRef}
-          type="text" required placeholder="link" className="bg-slate-200 w-[22vw] h-10 rounded-lg p-3 text-black placeholder:text-slate-500 placeholder:text-xl outline-none hover:bg-slate-300"/>
-        </div>
-        <div className="mt-5 text-lg font-semibold">
-          Choose Tag:
-        </div>
-        <div className="flex flex-wrap justify-center items-center gap-2 mt-2">
-        {mapTags.map((t) =>
-            tag === t ? (
-              <ModalTag2 key={t} tag={t} onClick={() => setTag(t)}/>
-            ) : (
-              <ModalTag1 key={t} tag={t} onClick={() => setTag(t)}/>
-            )
-        )}
-        </div>
-        <div className="mt-5 text-lg font-semibold">
-          Choose Category:
-        </div>
-        <div className="flex gap-2 mt-2">
-        <button onClick={()=> setCategory("Youtube")}
-        className={`px-2 py-1 text-xl ${category==="Youtube" ? "bg-blue-500 " : "bg-blue-300 "} rounded-lg hover:bg-blue-400`}>Youtube</button>
-        <button onClick={()=> setCategory("Twitter")}
-        className={`px-2 py-1 text-xl ${category==="Twitter" ? "bg-blue-500 " : "bg-blue-300 "} rounded-lg hover:bg-blue-400`}>Twitter</button>
-        <button onClick={()=> setCategory("Notion")}
-        className={`px-2 py-1 text-xl ${category==="Notion" ? "bg-blue-500 " : "bg-blue-300 "} rounded-lg hover:bg-blue-400`}>Notion</button>
-        </div>
-        <button onClick={submitData}
-        className="bg-red-400 text-lg font-bold px-4 mt-5 py-1 rounded-lg hover:bg-red-500">Submit</button>
-      </div>
+      </motion.div>
     </div>
   );
 };
-
-interface CardProps{
-  tag: "Productivity" | "Tech & Tools" | "Mindset" | "Learning & Skills" | "Workflows" | "Inspiration",
-  onClick: ()=> void
-}
-
-const ModalTag1 = (props: CardProps)=>{
-  return <button onClick={props.onClick} className="px-2 py-1 text-xl bg-blue-300 text-blue-600-500 rounded-lg hover:bg-blue-400">
-    {props.tag}
-  </button>
-}
-
-const ModalTag2 = (props: CardProps)=>{
-  return <button onClick={props.onClick} className="px-2 py-1 text-xl bg-blue-500 text-blue-600-500 rounded-lg hover:bg-blue-400">
-    {props.tag}
-  </button>
-}
 
 export default Modal;

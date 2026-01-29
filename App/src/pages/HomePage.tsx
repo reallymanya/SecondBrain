@@ -1,150 +1,161 @@
-import ButtonUi from "../components/ButtonUi/Button";
-import SideNavbar from "../components/SideNavbarUi/SideNavbar";
-import ShareIcon from "../components/icons/ShareIcon";
-import PlusIcon from "../components/icons/PlusIcon";
-import { useContext, JSX, useEffect, useRef, useState } from "react";
-import Modal from "../components/ModalUi/Modal";
-import Card from "../components/CardUi/Card";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Sidebar } from "@/components/ui/sidebar";
+import { Card } from "@/components/CardUi/Card";
+import Modal from "@/components/ModalUi/Modal";
+import { AnimatePresence } from "framer-motion";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
-const HomePage = ()=>{
-  const navigate = useNavigate();
-  const [modal,setModal] = useState(false);
-  const [reloadData, setReloadData] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [data1, setData] = useState<any[]>([]);
-  const [ytData, setYTData] = useState<any[]>([]);
-  const [notionData, setNitionData] = useState<any[]>([]);
-  const [shareData, setShareData] = useState<any[]>([]);
-  const [dataShow, setDataShow] = useState("All");
-  let show: JSX.Element | JSX.Element[] = data1;
+const HomePage = () => {
+  const [modal, setModal] = useState(false);
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(()=>{
-    fetchingData();
-  },[reloadData])
-
-  async function fetchingData(){
-    try{
-      setLoading(true);
+  const fetchData = async () => {
+    try {
       const token = localStorage.getItem("token");
-      if(!token){
-        alert("Please log in first");
-        navigate("/"); 
-        return;
-      }
+      if (!token) return;
 
-      const res = await fetch("http://localhost:5000/api/v1/content", {
-        method: "GET",
-        headers: {
-          "token": token
-        },
-        credentials: "include"
-      });
-
-      const jsonData = await res.json();
-      setData(jsonData.data);
-      }catch(err){
-        console.log("Error while sending data");
-      }finally {
-        setLoading(false);
-      }
-  }
-
-  if(dataShow === "All"){
-    show = loading ? (
-      <div className="text-2xl font-semibold">Loading...</div>
-    ) : ( data1.length > 0 ? data1.map((item: any, idx: number)=>{
-      return <Card key={idx} icon={item.contentType} tag={item.tag} title={item.title} link={item.link} reload={()=> setReloadData(!reloadData)}/>
-    }) : <div className="text-2xl font-semibold">You do not have any Content</div>
-    )
-  }else if(dataShow === "Youtube"){
-    show = loading ? (
-      <div className="text-2xl font-semibold">Loading...</div>
-    ) : ( ytData.length > 0 ? ytData.map((item: any, idx: number)=>{
-      return <Card key={idx} icon={item.contentType} tag={item.tag} title={item.title} link={item.link} reload={()=> setReloadData(!reloadData)}/>
-    }) : <div className="text-2xl font-semibold">You do not have any Content</div>
-    )
-  }else if(dataShow === "Twitter"){
-    show = loading ? (
-      <div className="text-2xl font-semibold">Loading...</div>
-    ) : ( ytData.length > 0 ? ytData.map((item: any, idx: number)=>{
-      return <Card key={idx} icon={item.contentType} tag={item.tag} title={item.title} link={item.link} reload={()=> setReloadData(!reloadData)}/>
-    }) : <div className="text-2xl font-semibold">You do not have any Content</div>
-    )
-  }
-  else{
-    show = loading ? (
-      <div className="text-2xl font-semibold">Loading...</div>
-    ) : ( notionData.length > 0 ? notionData.map((item: any, idx: number)=>{
-      return <Card key={idx} icon={item.contentType} tag={item.tag} title={item.title} link={item.link} reload={()=> setReloadData(!reloadData)}/>
-    }) : <div className="text-2xl font-semibold">You do not have any Content</div>
-    )
-  }
-
-  async function share(){
-    try{
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-
-      if(!token || !userId){
-        alert("Please log in first");
-        navigate("/"); 
-        return;
-      }
-
-      const res = await fetch(`http://localhost:5000/api/v1/content`, {
+      const response = await fetch("http://localhost:3001/api/v1/content", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "token": token
         },
-        credentials: "include",
       });
-      const jsonData = await res.json();
-      setShareData(jsonData.data);
-      //sharing/generating the link
-      if (res.ok) {
-        // Encode your data as a query parameter
-        const encodedData = encodeURIComponent(JSON.stringify(jsonData.data));
-        const shareLink = `http://localhost:5173/share/${userId}?data=${encodedData}`;
-       
-        navigator.clipboard.writeText(shareLink)
-        .then(() => {
-          alert("Shareable link copied to clipboard!");
-        })
-        .catch((err) => {
-          console.error("Failed to copy link: ", err);
-          alert("Failed to copy link to clipboard. Here's the link to share manually:\n" + shareLink);
-        });
-      } else {
-        alert("Something went wrong while sharing.");
+      const json = await response.json();
+      if (json.data) {
+        setData(json.data);
+        setFilteredData(json.data);
       }
-      }catch(err){
-        console.log("Error while sending data");
-      }
-  }
+    } catch (e) {
+      console.error("Error fetching data", e);
+    }
+  };
 
-  return <div className="flex">
-   <SideNavbar setData={setData} setYTData={setYTData} setNitionData={setNitionData} data1={data1} setDataShow={setDataShow}/>
-   <div className="bg-slate-200 w-full pb-10">
-    <div className="flex justify-between">
-      <div className="font-bold text-3xl mt-4 ml-8">All Notes</div>
-        <div className="flex gap-2 mt-5 mr-8">
-          <div onClick={share}>
-          <ButtonUi variant="secondary" size="lg" text={"Share Brain"} startIcon={<ShareIcon/>} />
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    let result = data;
+
+    // Filter by Tab
+    if (activeTab !== "all") {
+      result = result.filter((item: any) => (item.contentType || item.type) === activeTab);
+    }
+
+    // Filter by Search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((item: any) =>
+        item.title.toLowerCase().includes(query) ||
+        item.tags?.some((tag: string) => tag.toLowerCase().includes(query))
+      );
+    }
+
+    setFilteredData(result);
+  }, [activeTab, searchQuery, data]);
+
+  const deleteContent = async (contentId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("http://localhost:3001/api/v1/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "token": token || ""
+        },
+        body: JSON.stringify({ contentId })
+      });
+      fetchData();
+    } catch (e) {
+      console.error("Error deleting content", e);
+    }
+  };
+
+  const shareBrain = async () => {
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      const shareLink = `http://localhost:5173/share/${userId}`;
+      await navigator.clipboard.writeText(shareLink);
+      alert("Share link copied to clipboard: " + shareLink);
+    } else {
+      alert("Please log in to share your brain");
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen bg-[#030014] font-sans selection:bg-purple-500/30">
+      {/* Sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onAddContent={() => setModal(true)}
+        onShare={shareBrain}
+      />
+
+      {/* Main Content */}
+      <main className="flex-1 ml-72 p-8">
+        {/* Header */}
+        <header className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-3xl font-bold font-heading text-white mb-2">My Vault</h1>
+            <p className="text-slate-400 text-sm">Welcome back, here's your second brain.</p>
           </div>
-          <ButtonUi variant="primary" size="lg" text={"Add Content"} startIcon={<PlusIcon/>} 
-          onClick={()=> setModal(!modal)}/>
+
+          <div className="relative w-96">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by title or tag..."
+              className="pl-10 bg-white/[0.03] border-white/5"
+            />
+          </div>
+        </header>
+
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <AnimatePresence mode="popLayout">
+            {filteredData.map((item: any) => (
+              <Card
+                key={item._id}
+                title={item.title}
+                link={item.link}
+                type={item.type || item.contentType || "link"}
+                tags={item.tags}
+                date={item.date || new Date().toISOString()} // Fallback date if needed
+                onDelete={() => deleteContent(item._id)}
+              />
+            ))}
+          </AnimatePresence>
         </div>
-      </div>
-      <div className="ml-7 mt-6 flex flex-wrap gap-x-3 gap-y-5">
-      {
-       show
-      }
-      </div>
+
+        {filteredData.length === 0 && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/5 border border-white/5 mb-4">
+              <Search className="w-8 h-8 text-slate-600" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-300">No content found</h3>
+            <p className="text-slate-500 text-sm">Try adjusting your filters or add new content.</p>
+          </div>
+        )}
+      </main>
+
+      <AnimatePresence>
+        {modal && (
+          <Modal
+            setModal={setModal}
+            onClick={() => setModal(false)}
+            setReloadData={fetchData}
+          />
+        )}
+      </AnimatePresence>
     </div>
-    {modal && <Modal onClick={()=> setModal(!modal)} setModal={setModal} setReloadData={()=> setReloadData(!reloadData)}/>}
-  </div> 
-}
+  );
+};
 
 export default HomePage;

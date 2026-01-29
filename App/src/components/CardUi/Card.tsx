@@ -1,137 +1,110 @@
-import DocumentIcon from "../icons/DocumentIcon";
-import NotionIcon from "../icons/NotionIcon";
-import DeleteIcon from "../icons/DeleteIcon";
-import Tags from "./Tags";
-import { format } from 'date-fns'
-import { JSX, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import TwitterIcon from "../icons/TwitterIcon";
-
+import { Trash2, ExternalLink, Youtube, Twitter, FileText, Hash, Link as LinkIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface CardProps {
-  icon: "Youtube" | "Twitter" | "Notion";
-  tag: "Productivity" | "Tech & Tools" | "Mindset" | "Learning & Skills" | "Workflows" | "Inspiration";
   title: string;
-  link: string; 
-  reload?: ()=> void
+  link: string;
+  type: "youtube" | "twitter" | "medium" | "substack" | "link";
+  tags?: string[];
+  date: string;
+  onDelete: () => void;
 }
 
-const Card = (props: CardProps) => {
-  const navigate = useNavigate();
-  const date = format(new Date(), 'dd MMM yyyy');
-  const [thumbnail, setThumbnail] = useState<string | null>(null);
-  let contentPreview: JSX.Element = <p className="text-gray-500">No content available</p>;
+export const Card = ({ title, link, type, tags, date, onDelete }: CardProps) => {
 
-
-
-  const getYoutubeId = (url: string): string | null => {
-    const regularFormat = url.split("v=");
-    if (regularFormat.length > 1) {
-      const videoId = regularFormat[1].split("&")[0];
-      return videoId;
+  const getIcon = () => {
+    switch (type) {
+      case "youtube": return <Youtube className="w-5 h-5 text-red-500" />;
+      case "twitter": return <Twitter className="w-5 h-5 text-blue-400" />;
+      case "medium": return <FileText className="w-5 h-5 text-white" />;
+      case "substack": return <Hash className="w-5 h-5 text-[#FF6719]" />;
+      default: return <LinkIcon className="w-5 h-5 text-slate-400" />;
     }
+  }
 
-    const shortFormat = url.split("youtu.be/");
-    if (shortFormat.length > 1) {
-      const videoId = shortFormat[1].split("?")[0];
-      return videoId;
-    }
+  const getTypeLabel = () => {
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
 
-    return null; 
+  const getYouTubeId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   };
-  
-  if (props.icon === "Youtube") {
-    contentPreview = (
-      <div className="flex justify-center pt-6 items-center">
-        {thumbnail ? (
-          <a href={props.link} target="_blank" rel="noopener noreferrer">
-            <img src={thumbnail} alt={props.title} className="w-[90%] rounded-lg ml-3" />
-          </a>
-        ) : (
-          <p className="text-gray-500">No thumbnail available</p>
-        )}
-      </div>
-    );
-  } else if (props.icon === "Twitter") {
-    contentPreview = (
-      <div className="flex justify-center pt-6 items-center">
-          <a href={props.link} target="_blank" rel="noopener noreferrer">
-            <div className="w-[90%] rounded-lg ml-3">
-              <TwitterIcon />
-            </div>
-          </a>
-      </div>
-    );
-  } else if(props.icon === "Notion"){
-    contentPreview = (
-      <div className="flex justify-center pt-6 items-center">
-          <a href={props.link} target="_blank" rel="noopener noreferrer">
-            <div className="w-[90%] rounded-lg ml-3">
-              <NotionIcon />
-            </div>
-          </a>
-      </div>
-    );
-  }
 
-  useEffect(() => {
-    const videoId = getYoutubeId(props.link);
-    if (videoId) {
-      setThumbnail(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`);
-    } else {
-      setThumbnail(null);
-    }
-  }, [props.link]);
-  
-  async function deleteHandle(){
-    try{
-      const token = localStorage.getItem("token");
-      if(!token){
-        alert("Please log in first");
-        navigate("/"); 
-        return;
-      }
-
-      const res = await fetch(`http://localhost:5000/api/v1/delete/${props.title}`, {
-        method: "Delete",
-        headers: {
-          "token": token
-        },
-        credentials: "include"
-      });
-      if(res.ok){
-        alert("Item deleted");
-        props.reload && props.reload();
-        return;
-      }
-    }catch(err){
-      console.log("item not deleted");
-      return;
-    }
-  }
+  const youtubeId = type === "youtube" ? getYouTubeId(link) : null;
 
   return (
-    <div className="border-2 w-[19vw] h-[50vh] rounded-md relative bg-white shadow-md">
-      <div className="flex justify-between pt-4 pl-2 pr-4 items-center pb-2 border-b-2 border-slate-300 shadow-md rounded-2xl">
-        <div className="flex gap-2">
-          <span className="pt-1"><DocumentIcon /></span>
-          <span className="font-semibold text-2xl">{props.title}</span>
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="group relative bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/30 hover:bg-white/[0.05] transition-all"
+    >
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
+              {getIcon()}
+            </div>
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{getTypeLabel()}</span>
+          </div>
+          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => window.open(link, '_blank')} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+              <ExternalLink className="w-4 h-4" />
+            </button>
+            <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors">
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-        <div className="cursor-pointer" onClick={deleteHandle}>
-          <DeleteIcon />
+
+        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight min-h-[3.5rem]">
+          {title}
+        </h3>
+
+        {type === "youtube" && youtubeId && (
+          <div className="rounded-xl overflow-hidden border border-white/5 mb-4 aspect-video relative group/media cursor-pointer" onClick={() => window.open(link, '_blank')}>
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center group-hover/media:bg-black/30 transition-colors z-10">
+              <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center transition-transform group-hover/media:scale-110">
+                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white border-b-[6px] border-b-transparent ml-1" />
+              </div>
+            </div>
+            <img
+              src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+              alt="Thumbnail"
+              className="w-full h-full object-cover transform group-hover/media:scale-105 transition-transform duration-500 bg-slate-800"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+
+        {type === "twitter" && (
+          <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 mb-4 transition-colors hover:bg-blue-500/10 cursor-pointer" onClick={() => window.open(link, '_blank')}>
+            <Twitter className="w-4 h-4 text-blue-400 mb-2" />
+            <p className="text-xs text-blue-200/70 italic truncate">{link}</p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+          <div className="flex gap-2 flex-wrap">
+            {tags?.map((tag, i) => (
+              <span key={i} className="text-[10px] px-2 py-1 rounded-md bg-white/5 text-slate-300 border border-white/5">#{tag}</span>
+            ))}
+          </div>
+          <span className="text-[10px] text-slate-600 font-medium">
+            {new Date(date).toLocaleDateString()}
+          </span>
         </div>
       </div>
-      <div>
-        {contentPreview}
-      </div>
-      <div className="flex gap-3 pt-4 pl-5">
-        <Tags tagTypes={props.tag} />
-      </div>
-      <div className="text-sm text-gray-500 pl-5 pt-3 pb-2 absolute fixed bottom-2">
-        Created on: <span className="font-medium">{date}</span>
-      </div>
-    </div>
+    </motion.div>
   );
 };
-
-export default Card;
