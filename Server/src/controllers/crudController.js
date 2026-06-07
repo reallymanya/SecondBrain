@@ -72,7 +72,7 @@ export const deleteContent = async(req, res)=>{
       return;
     }
 
-    await userContent.findByIdAndDelete(content);
+    await userContent.findByIdAndDelete(content._id);
 
      res.status(200).json({ message: "Content deleted successfully" });
      return;
