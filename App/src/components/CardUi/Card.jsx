@@ -1,91 +1,154 @@
 import { Trash2, ExternalLink, Youtube, Twitter, FileText, Hash, Link as LinkIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tweet } from "react-tweet";
+import { useState, useEffect } from "react";
+
 export const Card = ({ title, link, type, tags, date, onDelete }) => {
     const getIcon = () => {
         switch (type) {
-            case "youtube": return <Youtube className="w-5 h-5 text-red-500"/>;
-            case "twitter": return <Twitter className="w-5 h-5 text-blue-400"/>;
-            case "medium": return <FileText className="w-5 h-5 text-white"/>;
-            case "substack": return <Hash className="w-5 h-5 text-[#FF6719]"/>;
-            default: return <LinkIcon className="w-5 h-5 text-slate-400"/>;
+            case "youtube": return <Youtube className="w-5 h-5 text-red-500" />;
+            case "twitter": return <Twitter className="w-5 h-5 text-blue-400" />;
+            case "medium": return <FileText className="w-5 h-5 text-white" />;
+            case "substack": return <Hash className="w-5 h-5 text-[#FF6719]" />;
+            default: return <LinkIcon className="w-5 h-5 text-slate-400" />;
         }
     };
+
     const getTypeLabel = () => {
         return type.charAt(0).toUpperCase() + type.slice(1);
     };
+
     const getYouTubeId = (url) => {
-        if (!url)
-            return null;
+        if (!url) return null;
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
     };
+
     const getTweetId = (url) => {
         if (!url) return null;
         const regExp = /(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/;
         const match = url.match(regExp);
         return match ? match[2] : null;
     };
+
     const youtubeId = type === "youtube" ? getYouTubeId(link) : null;
     const tweetId = type === "twitter" ? getTweetId(link) : null;
-    return (<motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="group relative bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/30 hover:bg-white/[0.05] transition-all">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
 
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
-              {getIcon()}
-            </div>
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{getTypeLabel()}</span>
-          </div>
-          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={() => window.open(link, '_blank')} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
-              <ExternalLink className="w-4 h-4"/>
-            </button>
-            <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors">
-              <Trash2 className="w-4 h-4"/>
-            </button>
-          </div>
-        </div>
+    const [previewImage, setPreviewImage] = useState(null);
 
-        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight min-h-[3.5rem]">
-          {title}
-        </h3>
+    useEffect(() => {
+        if (type !== "youtube" && type !== "twitter" && link) {
+            const fetchPreview = async () => {
+                try {
+                    const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(link)}`);
+                    const json = await res.json();
+                    if (json.status === "success" && json.data?.image?.url) {
+                        setPreviewImage(json.data.image.url);
+                    }
+                } catch (e) {
+                    console.error("Error fetching preview", e);
+                }
+            };
+            fetchPreview();
+        }
+    }, [link, type]);
 
-        {type === "youtube" && youtubeId && (<div className="rounded-xl overflow-hidden border border-white/5 mb-4 aspect-video relative group/media cursor-pointer" onClick={() => window.open(link, '_blank')}>
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center group-hover/media:bg-black/30 transition-colors z-10">
-              <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center transition-transform group-hover/media:scale-110">
-                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white border-b-[6px] border-b-transparent ml-1"/>
-              </div>
-            </div>
-            <img src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`} alt="Thumbnail" className="w-full h-full object-cover transform group-hover/media:scale-105 transition-transform duration-500 bg-slate-800" onError={(e) => {
-                e.target.style.display = 'none';
-            }}/>
-          </div>)}
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="group relative flex flex-col gap-3 w-full bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-2xl p-3 overflow-hidden hover:border-purple-500/30 hover:bg-white/[0.05] transition-all"
+        >
+            {/* THUMBNAIL AREA (16:9) */}
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/20 border border-white/5 group/thumb">
+                
+                {/* Media Content */}
+                {type === "youtube" && youtubeId ? (
+                    <img 
+                        src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`} 
+                        onError={(e) => { e.target.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`; }}
+                        alt="Thumbnail" 
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
+                    />
+                ) : type === "twitter" && tweetId ? (
+                    <div className="absolute inset-0 w-full h-full bg-[#000000] flex items-center justify-center overflow-hidden pointer-events-none">
+                        <div className="absolute inset-0 z-10" />
+                        <div className="w-[200%] flex justify-center items-center origin-center" style={{ transform: 'scale(0.50)' }}>
+                            <Tweet id={tweetId} />
+                        </div>
+                    </div>
+                ) : previewImage ? (
+                    <img 
+                        src={previewImage} 
+                        alt="Preview" 
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
+                    />
+                ) : (
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
+                        {getIcon()}
+                    </div>
+                )}
 
-        {type === "twitter" && (<div className="mb-4">
-            {tweetId ? (
-                <div data-theme="dark" className="w-full overflow-hidden rounded-xl border border-white/5 bg-[#000000]">
-                    <Tweet id={tweetId} />
+                {/* Hover Actions Overlay */}
+                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/thumb:opacity-100 transition-opacity z-20">
+                    <button 
+                        onClick={() => window.open(link, '_blank')} 
+                        className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-black/80 transition-colors"
+                    >
+                        <ExternalLink className="w-4 h-4" />
+                    </button>
+                    <button 
+                        onClick={onDelete} 
+                        className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-red-500/80 transition-colors"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
                 </div>
-            ) : (
-                <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 transition-colors hover:bg-blue-500/10 cursor-pointer" onClick={() => window.open(link, '_blank')}>
-                    <Twitter className="w-4 h-4 text-blue-400 mb-2"/>
-                    <p className="text-xs text-blue-200/70 italic truncate">{link}</p>
-                </div>
-            )}
-          </div>)}
 
-        <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-          <div className="flex gap-2 flex-wrap">
-            {tags?.map((tag, i) => (<span key={i} className="text-[10px] px-2 py-1 rounded-md bg-white/5 text-slate-300 border border-white/5">#{tag}</span>))}
-          </div>
-          <span className="text-[10px] text-slate-600 font-medium">
-            {new Date(date).toLocaleDateString()}
-          </span>
-        </div>
-      </div>
-    </motion.div>);
+                {/* Optional Type Badge on Thumbnail (like YouTube duration) */}
+                <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-medium text-white tracking-wide">
+                    {getTypeLabel().toUpperCase()}
+                </div>
+            </div>
+
+            {/* METADATA AREA (YouTube Style) */}
+            <div className="flex gap-3 px-1 cursor-pointer" onClick={() => window.open(link, '_blank')}>
+                
+                {/* Circular "Profile Picture" */}
+                <div className="flex-shrink-0 mt-0.5">
+                    <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-white">
+                        {getIcon()}
+                    </div>
+                </div>
+
+                {/* Title & Details */}
+                <div className="flex flex-col overflow-hidden w-full">
+                    <h3 className="text-[15px] font-semibold text-white line-clamp-2 leading-snug mb-1 group-hover:text-purple-400 transition-colors">
+                        {title}
+                    </h3>
+                    
+                    <div className="text-[13px] text-slate-400 flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5">
+                            <span>{getTypeLabel()}</span>
+                            <span className="text-[10px]">•</span>
+                            <span>{new Date(date).toLocaleDateString()}</span>
+                        </div>
+                        
+                        {tags && tags.length > 0 && (
+                            <div className="flex gap-1.5 mt-0.5 overflow-hidden">
+                                {tags.map((tag, i) => (
+                                    <span key={i} className="truncate">#{tag}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
 };

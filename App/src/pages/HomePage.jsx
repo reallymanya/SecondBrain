@@ -101,7 +101,7 @@ const HomePage = () => {
         </header>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredData.map((item) => (<Card key={item._id} title={item.title} link={item.link} type={item.type || item.contentType || "link"} tags={item.tags} date={item.date || new Date().toISOString()} // Fallback date if needed
          onDelete={() => deleteContent(item._id)}/>))}

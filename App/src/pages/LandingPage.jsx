@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Youtube, Twitter, FileText, Hash, LayoutGrid, CheckCircle, Brain, Share2, Search } from "lucide-react";
 const LandingPage = () => {
     const navigate = useNavigate();
+    const isLoggedIn = !!localStorage.getItem("token");
     return (<div className="min-h-screen w-full bg-[#030014] overflow-x-hidden font-sans selection:bg-purple-500/30 text-white relative">
 
             {/* Background Gradients */}
@@ -18,12 +19,20 @@ const LandingPage = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate("/login")} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                        Login
-                    </button>
-                    <GlowingButton onClick={() => navigate("/register")} className="bg-purple-600 hover:bg-purple-700">
-                        Get Started
-                    </GlowingButton>
+                    {isLoggedIn ? (
+                        <GlowingButton onClick={() => navigate("/HomePage")} className="bg-purple-600 hover:bg-purple-700">
+                            My Vault
+                        </GlowingButton>
+                    ) : (
+                        <>
+                            <button onClick={() => navigate("/login")} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                                Login
+                            </button>
+                            <GlowingButton onClick={() => navigate("/register")} className="bg-purple-600 hover:bg-purple-700">
+                                Get Started
+                            </GlowingButton>
+                        </>
+                    )}
                 </div>
             </nav>
 
@@ -41,12 +50,20 @@ const LandingPage = () => {
                         </p>
 
                         <div className="flex items-center gap-4 flex-wrap">
-                            <GlowingButton onClick={() => navigate("/register")} className="h-12 px-8 text-base">
-                                Get Started Free
-                            </GlowingButton>
-                            <button onClick={() => navigate("/login")} className="h-12 px-8 rounded-full border border-white/20 text-white font-medium hover:bg-white/5 transition-colors">
-                                Login
-                            </button>
+                            {isLoggedIn ? (
+                                <GlowingButton onClick={() => navigate("/HomePage")} className="h-12 px-8 text-base bg-purple-600 hover:bg-purple-700">
+                                    Go to My Vault
+                                </GlowingButton>
+                            ) : (
+                                <>
+                                    <GlowingButton onClick={() => navigate("/register")} className="h-12 px-8 text-base">
+                                        Get Started Free
+                                    </GlowingButton>
+                                    <button onClick={() => navigate("/login")} className="h-12 px-8 rounded-full border border-white/20 text-white font-medium hover:bg-white/5 transition-colors">
+                                        Login
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                         <div className="mt-12 flex gap-6 text-slate-400 text-sm">
