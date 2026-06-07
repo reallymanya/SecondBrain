@@ -1,5 +1,6 @@
 import { Trash2, ExternalLink, Youtube, Twitter, FileText, Hash, Link as LinkIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { Tweet } from "react-tweet";
 export const Card = ({ title, link, type, tags, date, onDelete }) => {
     const getIcon = () => {
         switch (type) {
@@ -20,7 +21,14 @@ export const Card = ({ title, link, type, tags, date, onDelete }) => {
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
     };
+    const getTweetId = (url) => {
+        if (!url) return null;
+        const regExp = /(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/;
+        const match = url.match(regExp);
+        return match ? match[2] : null;
+    };
     const youtubeId = type === "youtube" ? getYouTubeId(link) : null;
+    const tweetId = type === "twitter" ? getTweetId(link) : null;
     return (<motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="group relative bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/30 hover:bg-white/[0.05] transition-all">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
 
@@ -57,9 +65,17 @@ export const Card = ({ title, link, type, tags, date, onDelete }) => {
             }}/>
           </div>)}
 
-        {type === "twitter" && (<div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 mb-4 transition-colors hover:bg-blue-500/10 cursor-pointer" onClick={() => window.open(link, '_blank')}>
-            <Twitter className="w-4 h-4 text-blue-400 mb-2"/>
-            <p className="text-xs text-blue-200/70 italic truncate">{link}</p>
+        {type === "twitter" && (<div className="mb-4">
+            {tweetId ? (
+                <div data-theme="dark" className="w-full overflow-hidden rounded-xl border border-white/5 bg-[#000000]">
+                    <Tweet id={tweetId} />
+                </div>
+            ) : (
+                <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 transition-colors hover:bg-blue-500/10 cursor-pointer" onClick={() => window.open(link, '_blank')}>
+                    <Twitter className="w-4 h-4 text-blue-400 mb-2"/>
+                    <p className="text-xs text-blue-200/70 italic truncate">{link}</p>
+                </div>
+            )}
           </div>)}
 
         <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">

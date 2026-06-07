@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/ui/sidebar";
 import { Card } from "@/components/CardUi/Card";
 import Modal from "@/components/ModalUi/Modal";
+import ShareModal from "@/components/ModalUi/ShareModal";
 import { AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,9 @@ const HomePage = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [activeTab, setActiveTab] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [currentShareLink, setCurrentShareLink] = useState("");
+    
     const fetchData = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -53,13 +57,12 @@ const HomePage = () => {
     const deleteContent = async (contentId) => {
         try {
             const token = localStorage.getItem("token");
-            await fetch(`${import.meta.env.VITE_API_URL}/delete`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/delete/${contentId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
                     "token": token || ""
-                },
-                body: JSON.stringify({ contentId })
+                }
             });
             fetchData();
         }
@@ -71,8 +74,8 @@ const HomePage = () => {
         const userId = localStorage.getItem("userId");
         if (userId) {
             const shareLink = `${window.location.origin}/share/${userId}`;
-            await navigator.clipboard.writeText(shareLink);
-            alert("Share link copied to clipboard: " + shareLink);
+            setCurrentShareLink(shareLink);
+            setShareModalOpen(true);
         }
         else {
             alert("Please log in to share your brain");
@@ -116,6 +119,7 @@ const HomePage = () => {
 
       <AnimatePresence>
         {modal && (<Modal setModal={setModal} onClick={() => setModal(false)} setReloadData={fetchData}/>)}
+        {shareModalOpen && (<ShareModal shareLink={currentShareLink} setModal={setShareModalOpen} />)}
       </AnimatePresence>
     </div>);
 };
