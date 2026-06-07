@@ -76,9 +76,9 @@ export const Card = ({ title, link, type, tags, date, onDelete, onEdit }) => {
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
                     />
                 ) : type === "twitter" && tweetId ? (
-                    <div className="absolute inset-0 w-full h-full bg-[#000000] flex items-center justify-center overflow-hidden pointer-events-none">
+                    <div className="absolute inset-0 w-full h-full bg-[#000000] flex items-start justify-center overflow-hidden pointer-events-none">
                         <div className="absolute inset-0 z-10" />
-                        <div className="w-[200%] flex justify-center items-center origin-center" style={{ transform: 'scale(0.50)' }}>
+                        <div className="w-[200%] flex justify-center items-start origin-top mt-2" style={{ transform: 'scale(0.50)' }}>
                             <Tweet id={tweetId} />
                         </div>
                     </div>
@@ -103,20 +103,24 @@ export const Card = ({ title, link, type, tags, date, onDelete, onEdit }) => {
                     >
                         <ExternalLink className="w-4 h-4" />
                     </button>
-                    <button 
-                        onClick={onEdit} 
-                        className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-blue-500/80 transition-colors"
-                        title="Edit Content"
-                    >
-                        <Pencil className="w-4 h-4" />
-                    </button>
-                    <button 
-                        onClick={onDelete} 
-                        className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-red-500/80 transition-colors"
-                        title="Delete Content"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
+                    {onEdit && (
+                        <button 
+                            onClick={onEdit} 
+                            className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-blue-500/80 transition-colors"
+                            title="Edit Content"
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                    )}
+                    {onDelete && (
+                        <button 
+                            onClick={onDelete} 
+                            className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-red-500/80 transition-colors"
+                            title="Delete Content"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Optional Type Badge on Thumbnail (like YouTube duration) */}

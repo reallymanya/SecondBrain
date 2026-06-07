@@ -130,10 +130,10 @@ const LandingPage = () => {
             <section className="py-20 border-b border-white/5">
                 <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                     {[
-            { val: "10k+", label: "Active Users" },
-            { val: "5M+", label: "Links Saved" },
-            { val: "99.9%", label: "Uptime" },
-            { val: "24/7", label: "Support" },
+            { val: "100%", label: "Free to Use" },
+            { val: "Infinite", label: "Content Storage" },
+            { val: "Instant", label: "Search & Retrieval" },
+            { val: "Total", label: "Data Privacy" },
         ].map((stat, i) => (<div key={i}>
                             <div className="text-4xl font-bold font-heading mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">{stat.val}</div>
                             <div className="text-sm text-slate-500 uppercase tracking-wider">{stat.label}</div>
@@ -143,28 +143,28 @@ const LandingPage = () => {
 
             {/* Supported Platforms */}
             <section className="py-20 bg-white/[0.02]">
-                <div className="max-w-7xl mx-auto px-6 text-center">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
                     <h2 className="text-2xl font-bold mb-12">Connect your favorite platforms</h2>
-                    <div className="flex flex-wrap justify-center gap-10 md:gap-20">
-                        <div className="flex flex-col items-center gap-3 text-slate-400 hover:text-red-500 transition-colors">
-                            <Youtube className="w-12 h-12"/>
-                            <span className="font-medium">YouTube</span>
+                    <div className="flex justify-center gap-4 sm:gap-10 md:gap-20">
+                        <div className="flex flex-col items-center gap-2 md:gap-3 text-slate-400 hover:text-red-500 transition-colors">
+                            <Youtube className="w-7 h-7 md:w-12 md:h-12"/>
+                            <span className="text-[10px] md:text-base font-medium">YouTube</span>
                         </div>
-                        <div className="flex flex-col items-center gap-3 text-slate-400 hover:text-blue-400 transition-colors">
-                            <Twitter className="w-12 h-12"/>
-                            <span className="font-medium">Twitter</span>
+                        <div className="flex flex-col items-center gap-2 md:gap-3 text-slate-400 hover:text-blue-400 transition-colors">
+                            <Twitter className="w-7 h-7 md:w-12 md:h-12"/>
+                            <span className="text-[10px] md:text-base font-medium">Twitter</span>
                         </div>
-                        <div className="flex flex-col items-center gap-3 text-slate-400 hover:text-white transition-colors">
-                            <FileText className="w-12 h-12"/>
-                            <span className="font-medium">Medium</span>
+                        <div className="flex flex-col items-center gap-2 md:gap-3 text-slate-400 hover:text-white transition-colors">
+                            <FileText className="w-7 h-7 md:w-12 md:h-12"/>
+                            <span className="text-[10px] md:text-base font-medium">Medium</span>
                         </div>
-                        <div className="flex flex-col items-center gap-3 text-slate-400 hover:text-[#FF6719] transition-colors">
-                            <Hash className="w-12 h-12"/>
-                            <span className="font-medium">Substack</span>
+                        <div className="flex flex-col items-center gap-2 md:gap-3 text-slate-400 hover:text-[#FF6719] transition-colors">
+                            <Hash className="w-7 h-7 md:w-12 md:h-12"/>
+                            <span className="text-[10px] md:text-base font-medium">Substack</span>
                         </div>
-                        <div className="flex flex-col items-center gap-3 text-slate-400 hover:text-purple-400 transition-colors">
-                            <LayoutGrid className="w-12 h-12"/>
-                            <span className="font-medium">More...</span>
+                        <div className="flex flex-col items-center gap-2 md:gap-3 text-slate-400 hover:text-purple-400 transition-colors">
+                            <LayoutGrid className="w-7 h-7 md:w-12 md:h-12"/>
+                            <span className="text-[10px] md:text-base font-medium">More...</span>
                         </div>
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import { Card } from "@/components/CardUi/Card";
 import Modal from "@/components/ModalUi/Modal";
 import ShareModal from "@/components/ModalUi/ShareModal";
 import { AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 const HomePage = () => {
     const [modal, setModal] = useState(false);
@@ -15,6 +15,7 @@ const HomePage = () => {
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const [currentShareLink, setCurrentShareLink] = useState("");
     const [editItem, setEditItem] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     
     const fetchData = async () => {
         try {
@@ -94,20 +95,28 @@ const HomePage = () => {
 
     return (<div className="flex min-h-screen bg-[#030014] font-sans selection:bg-purple-500/30">
       {/* Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onAddContent={handleAddClick} onShare={shareBrain}/>
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onAddContent={handleAddClick} onShare={shareBrain} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen}/>
 
       {/* Main Content */}
-      <main className="flex-1 ml-72 p-8">
+      <main className="flex-1 ml-0 md:ml-72 p-4 md:p-8 w-full max-w-full overflow-x-hidden">
         {/* Header */}
-        <header className="flex items-center justify-between mb-10">
-          <div>
-            <h1 className="text-3xl font-bold font-heading text-white mb-2">My Vault</h1>
-            <p className="text-slate-400 text-sm">Welcome back, here's your second brain.</p>
+        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-4">
+            <button 
+                onClick={() => setIsSidebarOpen(true)} 
+                className="md:hidden p-2 bg-white/5 border border-white/10 rounded-lg text-white"
+            >
+                <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold font-heading text-white mb-1 md:mb-2">My Vault</h1>
+              <p className="text-slate-400 text-xs md:text-sm">Welcome back, here's your second brain.</p>
+            </div>
           </div>
 
-          <div className="relative w-96">
+          <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"/>
-            <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by title or tag..." className="pl-10 bg-white/[0.03] border-white/5"/>
+            <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by title or tag..." className="pl-10 bg-white/[0.03] border-white/5 w-full"/>
           </div>
         </header>
 

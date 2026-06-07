@@ -1,9 +1,9 @@
 "use client";
-import { Twitter, Youtube, FileText, Hash, LayoutGrid, LogOut, Plus, Share2, Link as LinkIcon } from "lucide-react";
+import { X, Twitter, Youtube, FileText, Hash, LayoutGrid, LogOut, Plus, Share2, Link as LinkIcon } from "lucide-react";
 import { GlowingButton } from "./glowing-button";
 import { useNavigate } from "react-router-dom";
 import { BrainSimulation } from "./brain-simulation";
-export const Sidebar = ({ activeTab, setActiveTab, onAddContent, onShare }) => {
+export const Sidebar = ({ activeTab, setActiveTab, onAddContent, onShare, isOpen, setIsOpen }) => {
     const navigate = useNavigate();
     const menuItems = [
         { id: "all", label: "All Notes", icon: <LayoutGrid className="w-5 h-5"/> },
@@ -18,17 +18,35 @@ export const Sidebar = ({ activeTab, setActiveTab, onAddContent, onShare }) => {
         localStorage.removeItem("userId");
         navigate("/login");
     };
-    return (<div className="w-72 h-screen bg-[#050505] border-r border-white/5 flex flex-col p-6 fixed left-0 top-0 z-20">
-            <div className="flex items-center gap-3 px-2 mb-10 group cursor-pointer" onClick={() => navigate("/")}>
-                <div className="relative">
-                    <div className="absolute inset-0 bg-purple-500/20 blur-md rounded-full"/>
-                    <BrainSimulation className="w-8 h-8 relative z-10"/>
+    return (
+        <>
+            {/* Mobile backdrop */}
+            {isOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 md:hidden" 
+                    onClick={() => setIsOpen && setIsOpen(false)}
+                />
+            )}
+            
+            <div className={`w-72 h-screen bg-[#050505] border-r border-white/5 flex flex-col p-6 fixed left-0 top-0 z-40 transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+                <div className="flex items-center justify-between px-2 mb-10">
+                    <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate("/")}>
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-purple-500/20 blur-md rounded-full"/>
+                            <BrainSimulation className="w-8 h-8 relative z-10"/>
+                        </div>
+                        <span className="text-xl font-bold font-heading text-white tracking-tight">Second Brain</span>
+                    </div>
+                    
+                    {setIsOpen && (
+                        <button onClick={() => setIsOpen(false)} className="md:hidden text-slate-400 hover:text-white">
+                            <X className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
-                <span className="text-xl font-bold font-heading text-white tracking-tight">Second Brain</span>
-            </div>
 
             <div className="space-y-2 flex-1">
-                {menuItems.map((item) => (<button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${activeTab === item.id
+                {menuItems.map((item) => (<button key={item.id} onClick={() => { setActiveTab(item.id); if(setIsOpen) setIsOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${activeTab === item.id
                 ? "bg-purple-600/10 text-purple-400 border border-purple-500/20"
                 : "text-slate-400 hover:text-white hover:bg-white/5"}`}>
                         <span className={`${activeTab === item.id ? "text-purple-400" : "text-slate-500 group-hover:text-white"}`}>
@@ -56,5 +74,7 @@ export const Sidebar = ({ activeTab, setActiveTab, onAddContent, onShare }) => {
                     <span className="font-medium">Sign Out</span>
                 </button>
             </div>
-        </div>);
+        </div>
+        </>
+    );
 };
