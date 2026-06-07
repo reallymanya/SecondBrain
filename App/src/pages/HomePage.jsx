@@ -14,6 +14,7 @@ const HomePage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const [currentShareLink, setCurrentShareLink] = useState("");
+    const [editItem, setEditItem] = useState(null);
     
     const fetchData = async () => {
         try {
@@ -81,9 +82,19 @@ const HomePage = () => {
             alert("Please log in to share your brain");
         }
     };
+    const openEditModal = (item) => {
+        setEditItem(item);
+        setModal(true);
+    };
+
+    const handleAddClick = () => {
+        setEditItem(null);
+        setModal(true);
+    };
+
     return (<div className="flex min-h-screen bg-[#030014] font-sans selection:bg-purple-500/30">
       {/* Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onAddContent={() => setModal(true)} onShare={shareBrain}/>
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onAddContent={handleAddClick} onShare={shareBrain}/>
 
       {/* Main Content */}
       <main className="flex-1 ml-72 p-8">
@@ -104,7 +115,7 @@ const HomePage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredData.map((item) => (<Card key={item._id} title={item.title} link={item.link} type={item.type || item.contentType || "link"} tags={item.tags} date={item.date || new Date().toISOString()} // Fallback date if needed
-         onDelete={() => deleteContent(item._id)}/>))}
+         onDelete={() => deleteContent(item._id)} onEdit={() => openEditModal(item)} />))}
           </AnimatePresence>
         </div>
 
@@ -118,7 +129,7 @@ const HomePage = () => {
       </main>
 
       <AnimatePresence>
-        {modal && (<Modal setModal={setModal} onClick={() => setModal(false)} setReloadData={fetchData}/>)}
+        {modal && (<Modal setModal={setModal} onClick={() => setModal(false)} setReloadData={fetchData} editItem={editItem} />)}
         {shareModalOpen && (<ShareModal shareLink={currentShareLink} setModal={setShareModalOpen} />)}
       </AnimatePresence>
     </div>);

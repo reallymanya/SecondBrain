@@ -1,9 +1,9 @@
-import { Trash2, ExternalLink, Youtube, Twitter, FileText, Hash, Link as LinkIcon } from "lucide-react";
+import { Trash2, Pencil, ExternalLink, Youtube, Twitter, FileText, Hash, Link as LinkIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tweet } from "react-tweet";
 import { useState, useEffect } from "react";
 
-export const Card = ({ title, link, type, tags, date, onDelete }) => {
+export const Card = ({ title, link, type, tags, date, onDelete, onEdit }) => {
     const getIcon = () => {
         switch (type) {
             case "youtube": return <Youtube className="w-5 h-5 text-red-500" />;
@@ -99,12 +99,21 @@ export const Card = ({ title, link, type, tags, date, onDelete }) => {
                     <button 
                         onClick={() => window.open(link, '_blank')} 
                         className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-black/80 transition-colors"
+                        title="Open Link"
                     >
                         <ExternalLink className="w-4 h-4" />
                     </button>
                     <button 
+                        onClick={onEdit} 
+                        className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-blue-500/80 transition-colors"
+                        title="Edit Content"
+                    >
+                        <Pencil className="w-4 h-4" />
+                    </button>
+                    <button 
                         onClick={onDelete} 
                         className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-white hover:bg-red-500/80 transition-colors"
+                        title="Delete Content"
                     >
                         <Trash2 className="w-4 h-4" />
                     </button>

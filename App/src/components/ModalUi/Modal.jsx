@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Youtube, Twitter, FileText, Hash, Link as LinkIcon, Check } from "lucide-react";
 import { GlowingButton } from "@/components/ui/glowing-button";
@@ -12,6 +12,18 @@ const Modal = (props) => {
     const [tag, setTag] = useState("Productivity");
     const [category, setCategory] = useState("youtube");
     const [loading, setLoading] = useState(false);
+
+    // Pre-fill if editing
+    useEffect(() => {
+        if (props.editItem) {
+            if (titleRef.current) titleRef.current.value = props.editItem.title || "";
+            if (linkRef.current) linkRef.current.value = props.editItem.link || "";
+            setCategory(props.editItem.type || props.editItem.contentType || "link");
+            if (props.editItem.tags && props.editItem.tags.length > 0) {
+                setTag(props.editItem.tags[0]); // Select the first tag
+            }
+        }
+    }, [props.editItem]);
     const mapTags = ["Productivity", "Tech & Tools", "Mindset", "Learning & Skills", "Workflows", "Inspiration"];
     const categories = [
         { id: "youtube", label: "YouTube", icon: <Youtube className="w-4 h-4"/> },
@@ -38,8 +50,14 @@ const Modal = (props) => {
                 navigate("/login");
                 return;
             }
-            await fetch(`${import.meta.env.VITE_API_URL}/addcontent`, {
-                method: "POST",
+            
+            const isEditing = !!props.editItem;
+            const url = isEditing 
+                ? `${import.meta.env.VITE_API_URL}/update/${props.editItem._id}`
+                : `${import.meta.env.VITE_API_URL}/addcontent`;
+                
+            await fetch(url, {
+                method: isEditing ? "PUT" : "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "token": token
@@ -63,7 +81,7 @@ const Modal = (props) => {
       <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative z-10 w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
-          <h2 className="text-xl font-bold font-heading text-white">Add New Content</h2>
+          <h2 className="text-xl font-bold font-heading text-white">{props.editItem ? "Edit Content" : "Add New Content"}</h2>
           <button onClick={props.onClick} className="p-1 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
             <X className="w-5 h-5"/>
           </button>
@@ -108,7 +126,7 @@ const Modal = (props) => {
 
           <div className="pt-2">
             <GlowingButton onClick={submitData} className="w-full" disabled={loading}>
-              {loading ? "Adding to Brain..." : "Add Content"}
+              {loading ? "Saving..." : props.editItem ? "Save Changes" : "Add Content"}
             </GlowingButton>
           </div>
         </div>
