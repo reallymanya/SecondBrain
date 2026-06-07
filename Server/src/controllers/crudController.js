@@ -65,7 +65,7 @@ export const deleteContent = async(req, res)=>{
        return;
     }
 
-    const content = await userContent.findOne({ title: userTitle, userId: userid });
+    const content = await userContent.findOne({ _id: userTitle, userId: userid });
 
     if (!content) {
       res.status(404).json({ message: "Content not found or unauthorized" });
