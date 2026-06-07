@@ -28,6 +28,7 @@ const HomePage = () => {
                     "Content-Type": "application/json",
                     "token": token
                 },
+                cache: "no-store"
             });
             const json = await response.json();
             if (json.data) {
@@ -52,7 +53,7 @@ const HomePage = () => {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             result = result.filter((item) => item.title.toLowerCase().includes(query) ||
-                item.tags?.some((tag) => tag.toLowerCase().includes(query)));
+                (item.tag && item.tag.toLowerCase().includes(query)));
         }
         setFilteredData(result);
     }, [activeTab, searchQuery, data]);
@@ -123,7 +124,7 @@ const HomePage = () => {
         {/* Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
-            {filteredData.map((item) => (<Card key={item._id} title={item.title} link={item.link} type={item.type || item.contentType || "link"} tags={item.tags} date={item.date || new Date().toISOString()} // Fallback date if needed
+            {filteredData.map((item) => (<Card key={item._id} title={item.title} link={item.link} type={item.type || item.contentType || "link"} tags={item.tag ? [item.tag] : []} date={item.date || new Date().toISOString()} // Fallback date if needed
          onDelete={() => deleteContent(item._id)} onEdit={() => openEditModal(item)} />))}
           </AnimatePresence>
         </div>

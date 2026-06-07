@@ -19,8 +19,8 @@ const Modal = (props) => {
             if (titleRef.current) titleRef.current.value = props.editItem.title || "";
             if (linkRef.current) linkRef.current.value = props.editItem.link || "";
             setCategory(props.editItem.type || props.editItem.contentType || "link");
-            if (props.editItem.tags && props.editItem.tags.length > 0) {
-                setTag(props.editItem.tags[0]); // Select the first tag
+            if (props.editItem.tag) {
+                setTag(props.editItem.tag);
             }
         }
     }, [props.editItem]);
@@ -56,7 +56,7 @@ const Modal = (props) => {
                 ? `${import.meta.env.VITE_API_URL}/update/${props.editItem._id}`
                 : `${import.meta.env.VITE_API_URL}/addcontent`;
                 
-            await fetch(url, {
+            const res = await fetch(url, {
                 method: isEditing ? "PUT" : "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -65,6 +65,12 @@ const Modal = (props) => {
                 credentials: "include",
                 body: JSON.stringify(data)
             });
+            
+            if (!res.ok) {
+                const text = await res.text();
+                alert("API Error: " + text);
+                return;
+            }
             props.setReloadData();
             props.setModal(false);
         }
