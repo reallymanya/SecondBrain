@@ -38,7 +38,7 @@ const Modal = (props) => {
                 navigate("/login");
                 return;
             }
-            await fetch("http://localhost:3001/api/v1/addcontent", {
+            await fetch(`${import.meta.env.VITE_API_URL}/addcontent`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

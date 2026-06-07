@@ -11,7 +11,7 @@ const SharedPage = () => {
             if (!id)
                 return;
             try {
-                const response = await fetch(`http://localhost:3001/api/v1/share/${id}`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/share/${id}`);
                 const json = await response.json();
                 if (json.data) {
                     setSharedData(json.data);

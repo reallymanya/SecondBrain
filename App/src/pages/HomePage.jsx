@@ -16,7 +16,7 @@ const HomePage = () => {
             const token = localStorage.getItem("token");
             if (!token)
                 return;
-            const response = await fetch("http://localhost:3001/api/v1/content", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/content`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -53,7 +53,7 @@ const HomePage = () => {
     const deleteContent = async (contentId) => {
         try {
             const token = localStorage.getItem("token");
-            await fetch("http://localhost:3001/api/v1/delete", {
+            await fetch(`${import.meta.env.VITE_API_URL}/delete`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -70,7 +70,7 @@ const HomePage = () => {
     const shareBrain = async () => {
         const userId = localStorage.getItem("userId");
         if (userId) {
-            const shareLink = `http://localhost:5173/share/${userId}`;
+            const shareLink = `${window.location.origin}/share/${userId}`;
             await navigator.clipboard.writeText(shareLink);
             alert("Share link copied to clipboard: " + shareLink);
         }
