@@ -82,6 +82,39 @@ export const deleteContent = async(req, res)=>{
   }
 }
 
+export const updateContent = async(req, res)=>{
+  try{
+    const userid = req.userID;
+    const userTitle = req.params.contentId;
+    const {link, contentType, title, tag} = req.body;
+
+    if (!userid || !userTitle) {
+       res.status(400).json({ message: "User ID or Content ID missing" });
+       return;
+    }
+
+    const content = await userContent.findOne({ _id: userTitle, userId: userid });
+
+    if (!content) {
+      res.status(404).json({ message: "Content not found or unauthorized" });
+      return;
+    }
+
+    await userContent.findByIdAndUpdate(content._id, {
+        link,
+        contentType,
+        title,
+        tag
+    });
+
+    res.status(200).json({ message: "Content updated successfully" });
+    return;
+  }catch(err){
+    console.log("Err(catch): something went wrong during update",err)
+    return;
+  }
+}
+
 export const shareContent = async(req, res)=>{
   const { userId } = req.params;
   try {
